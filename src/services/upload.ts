@@ -1,8 +1,7 @@
 import { Web3Storage } from "web3.storage";
 
 const client = new Web3Storage({
-  token:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDU5MTUwRDJGNjVBNzBjQjJFOGEwZjY3QjM2NDM0ZTk2NTA1YjYzOTkiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NzYzOTQwOTYxODUsIm5hbWUiOiJpbnNjcmliZSJ9.YvGCTGJpUGtiF0jywsaPtTfurYXW8i9vH1rZMcghGco",
+  token: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY as string,
 });
 
 export async function uploadFolder(files: File[]) {
@@ -24,7 +23,7 @@ export async function uploadFolder(files: File[]) {
   // and return the root cid when the upload completes
   const cid = await client.put(files, { onRootCidReady, onStoredChunk });
   console.log("Upload complete! CID:", cid);
-  return `https://${cid}.ipfs.w3s.link/`;
+  return cid;
 }
 
 export const convertBase64 = (file: any): any => {
@@ -38,4 +37,17 @@ export const convertBase64 = (file: any): any => {
       reject(error);
     };
   });
+};
+
+export const generateImage = async (cid: string, fileName: string) => {
+  const res = await fetch("http://localhost:5001/generateImage?cid=" + cid);
+  const imageBlob = await res.blob();
+  const file = new File([imageBlob], fileName, { type: "image/png" });
+  const upload = await client.put([file]);
+  const uploadUrl = `https://${cid}.ipfs.w3s.link/${fileName}`;
+  const imageObjectURL = URL.createObjectURL(imageBlob);
+  return {
+    url: imageObjectURL,
+    thumbnail: uploadUrl,
+  };
 };

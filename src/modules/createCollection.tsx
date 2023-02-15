@@ -1,9 +1,16 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useAtom } from "jotai";
 import dynamic from "next/dynamic";
 import React, { useState } from "react";
-import { AiOutlineClose } from "react-icons/ai";
+import { AiOutlineClose, AiOutlineLoading } from "react-icons/ai";
+import { userAtom } from "../../pages";
 import AnimatedLayout from "../components/animatedLayout";
-import { convertBase64, uploadFolder } from "../services/upload";
+import {
+  endTimeOptions,
+  maxSupplyOptions,
+  mintPriceOptions,
+} from "../constants/constants";
+import { generateImage, uploadFolder } from "../services/upload";
 const RichTextEditor = dynamic(() => import("@mantine/rte"), {
   ssr: false,
   loading: () => null,
@@ -28,15 +35,17 @@ export default function CreateCollection({ handleClose }: Props) {
   const [maxSupply, setMaxSupply] = useState(555);
   const [endTime, setEndTime] = useState(1);
   const [mintPrice, setMintPrice] = useState(0.0021);
-
-  const [fileList, setFileList] = useState<File[]>();
   const [uploading, setUploading] = useState(false);
 
-  const [artworkBaseUri, setArtworkBaseUri] = useState("");
+  const [cid, setCid] = useState("");
+  const [generatedImage, setGeneratedImage] = useState("");
+  const [thumbnail, setThumbnail] = useState("");
+
+  const [user] = useAtom(userAtom);
 
   return (
     <motion.div
-      className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+      className="fixed inset-0 flex items-center justify-center z-10 bg-black bg-opacity-50"
       onClick={handleClose}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -148,54 +157,17 @@ export default function CreateCollection({ handleClose }: Props) {
                         <span className="label-text">Max supply</span>
                       </label>
                       <div className="flex flex-row gap-2">
-                        <button
-                          className={`btn ${
-                            maxSupply === 555 ? "" : "btn-ghost"
-                          }`}
-                          onClick={() => setMaxSupply(555)}
-                        >
-                          555
-                        </button>
-                        <button
-                          className={`btn ${
-                            maxSupply === 777 ? "" : "btn-ghost"
-                          }`}
-                          onClick={() => setMaxSupply(777)}
-                        >
-                          777
-                        </button>
-                        <button
-                          className={`btn ${
-                            maxSupply === 1111 ? "" : "btn-ghost"
-                          }`}
-                          onClick={() => setMaxSupply(1111)}
-                        >
-                          1111
-                        </button>
-                        <button
-                          className={`btn ${
-                            maxSupply === 2222 ? "" : "btn-ghost"
-                          }`}
-                          onClick={() => setMaxSupply(2222)}
-                        >
-                          2222
-                        </button>
-                        <button
-                          className={`btn ${
-                            maxSupply === 4200 ? "" : "btn-ghost"
-                          }`}
-                          onClick={() => setMaxSupply(4200)}
-                        >
-                          4200
-                        </button>
-                        <button
-                          className={`btn ${
-                            maxSupply === 5555 ? "" : "btn-ghost"
-                          }`}
-                          onClick={() => setMaxSupply(5555)}
-                        >
-                          5555
-                        </button>
+                        {maxSupplyOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            className={`btn ${
+                              maxSupply === option.value ? "" : "btn-ghost"
+                            }`}
+                            onClick={() => setMaxSupply(option.value)}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   ) : (
@@ -204,36 +176,17 @@ export default function CreateCollection({ handleClose }: Props) {
                         <span className="label-text">End time</span>
                       </label>
                       <div className="flex flex-row gap-2">
-                        <button
-                          className={`btn ${endTime === 1 ? "" : "btn-ghost"}`}
-                          onClick={() => setEndTime(1)}
-                        >
-                          1 day
-                        </button>
-                        <button
-                          className={`btn ${endTime === 2 ? "" : "btn-ghost"}`}
-                          onClick={() => setEndTime(2)}
-                        >
-                          2 days
-                        </button>
-                        <button
-                          className={`btn ${endTime === 3 ? "" : "btn-ghost"}`}
-                          onClick={() => setEndTime(3)}
-                        >
-                          3 days
-                        </button>
-                        <button
-                          className={`btn ${endTime === 5 ? "" : "btn-ghost"}`}
-                          onClick={() => setEndTime(5)}
-                        >
-                          5 days
-                        </button>
-                        <button
-                          className={`btn ${endTime === 7 ? "" : "btn-ghost"}`}
-                          onClick={() => setEndTime(7)}
-                        >
-                          7 days
-                        </button>
+                        {endTimeOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            className={`btn ${
+                              endTime === option.value ? "" : "btn-ghost"
+                            }`}
+                            onClick={() => setEndTime(option.value)}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -242,46 +195,17 @@ export default function CreateCollection({ handleClose }: Props) {
                       <span className="label-text">Mint price</span>
                     </label>
                     <div className="flex flex-row gap-2">
-                      <button
-                        className={`btn ${
-                          mintPrice === 0.0021 ? "" : "btn-ghost"
-                        }`}
-                        onClick={() => setMintPrice(0.0021)}
-                      >
-                        0.0021 BTC
-                      </button>
-                      <button
-                        className={`btn ${
-                          mintPrice === 0.0042 ? "" : "btn-ghost"
-                        }`}
-                        onClick={() => setMintPrice(0.0042)}
-                      >
-                        0.0042 BTC
-                      </button>
-                      <button
-                        className={`btn ${
-                          mintPrice === 0.0069 ? "" : "btn-ghost"
-                        }`}
-                        onClick={() => setMintPrice(0.0069)}
-                      >
-                        0.0069 BTC
-                      </button>
-                      <button
-                        className={`btn ${
-                          mintPrice === 0.01 ? "" : "btn-ghost"
-                        }`}
-                        onClick={() => setMintPrice(0.01)}
-                      >
-                        0.01 BTC
-                      </button>
-                      <button
-                        className={`btn ${
-                          mintPrice === 0.02 ? "" : "btn-ghost"
-                        }`}
-                        onClick={() => setMintPrice(0.02)}
-                      >
-                        Free
-                      </button>
+                      {mintPriceOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          className={`btn ${
+                            mintPrice === option.value ? "" : "btn-ghost"
+                          }`}
+                          onClick={() => setMintPrice(option.value)}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -307,47 +231,123 @@ export default function CreateCollection({ handleClose }: Props) {
                       <label className="label">
                         <span className="label-text">Upload Artwork</span>
                       </label>
-                      <div className="flex flex-row">
-                        <input
-                          type="file"
-                          className="file-input w-full max-w-xs"
-                          onChange={async (e) => {
-                            const allFiles = [
-                              ...(e.target.files as any),
-                            ].filter((f) => f.type === "image/png");
-                            const fileList: File[] = [];
-                            allFiles.forEach((f) => {
-                              fileList.push(
-                                new File(
-                                  [f],
-                                  f.webkitRelativePath
-                                    .split("/")
-                                    .splice(1)
-                                    .join("/")
-                                )
-                              );
-                            });
-                            console.log({
-                              fileList,
-                              allFiles,
-                            });
-                            setFileList(fileList);
-                          }}
-                          {...otherAtt}
-                        />
-                        {/* {progress && (
-                          <div
-                            className="radial-progress"
-                            // @ts-ignore
-                            style={{ "--value": progress }}
+                      {type === 1 ? (
+                        <div className="flex flex-row items-center">
+                          <input
+                            type="file"
+                            className="file-input w-full max-w-xs"
+                            onChange={async (e) => {
+                              const allFiles = [
+                                ...(e.target.files as any),
+                              ].filter((f) => f.type === "image/png");
+                              const fileList: File[] = [];
+                              allFiles.forEach((f) => {
+                                fileList.push(
+                                  new File(
+                                    [f],
+                                    f.webkitRelativePath
+                                      .split("/")
+                                      .splice(1)
+                                      .join("/")
+                                  )
+                                );
+                              });
+                              console.log({
+                                fileList,
+                                allFiles,
+                              });
+                              if (!fileList) return;
+                              setUploading(true);
+                              const res = await uploadFolder(fileList);
+                              console.log(res);
+                              setCid(res);
+                              const img = await generateImage(res, name);
+                              console.log({ img });
+                              setGeneratedImage(img.url);
+                              setUploading(false);
+                            }}
+                            {...otherAtt}
+                          />
+                          {uploading && (
+                            <AiOutlineLoading className="ml-2 animate-spin" />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-row items-center">
+                          <input
+                            type="file"
+                            accept=".png"
+                            className="file-input w-full max-w-xs"
+                            onChange={async (e) => {
+                              const allFiles = [
+                                ...(e.target.files as any),
+                              ].filter((f) => f.type === "image/png");
+                              const fileList: File[] = [];
+                              allFiles.forEach((f) => {
+                                fileList.push(
+                                  new File(
+                                    [f],
+                                    f.webkitRelativePath
+                                      .split("/")
+                                      .splice(1)
+                                      .join("/")
+                                  )
+                                );
+                              });
+                              console.log({
+                                fileList,
+                                allFiles,
+                              });
+                              if (!fileList) return;
+                              setUploading(true);
+                              const res = await uploadFolder(fileList);
+                              console.log(res);
+                              setCid(res);
+                              const img = await generateImage(res, name);
+                              console.log({ img });
+                              setGeneratedImage(img.url);
+                              setUploading(false);
+                            }}
+                          />
+                          {uploading && (
+                            <AiOutlineLoading className="ml-2 animate-spin" />
+                          )}
+                        </div>
+                      )}
+                      {type === 1 ? (
+                        <div>
+                          Upload a folder containing your layers. It should be
+                          512x512 png images with size less than 10kb.
+                        </div>
+                      ) : (
+                        <div>
+                          Upload a folder containing a single folder which
+                          contains a single image. It should be 512x512 png with
+                          size less than 10kb.
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-4 items-center w-full my-4">
+                        {generatedImage && (
+                          <img src={generatedImage} className="w-48 h-48" />
+                        )}
+                        {type === 1 && (
+                          <button
+                            className={`btn btn-ghost ${
+                              uploading ? "loading" : ""
+                            }`}
+                            onClick={async () => {
+                              setUploading(true);
+                              const fileName = name + ".png";
+                              const img = await generateImage(cid, fileName);
+                              console.log({ img });
+                              setGeneratedImage(img.url);
+                              setThumbnail(img.thumbnail);
+                              setUploading(false);
+                            }}
                           >
-                            {progress}%
-                          </div>
-                        )} */}
-                      </div>
-                      <div>
-                        Upload a folder containing your layers. It should be
-                        512x512 png images.
+                            preview another image
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -359,18 +359,30 @@ export default function CreateCollection({ handleClose }: Props) {
                       Back
                     </button>
                     <button
-                      className={`btn w-1/2 ${uploading ? "loading" : ""}`}
+                      className={`btn w-1/2`}
                       onClick={async () => {
-                        if (!fileList) return;
-                        setUploading(true);
-                        const res = await uploadFolder(fileList);
-                        console.log(res);
-                        setArtworkBaseUri(res);
-                        setUploading(false);
-                        setStep(3);
+                        // setStep(3);
+                        const res = await fetch("/api/collection", {
+                          method: "POST",
+                          body: JSON.stringify({
+                            name,
+                            description,
+                            website,
+                            type,
+                            maxSupply,
+                            cid,
+                            mintPriceSats: mintPrice * 100000000,
+                            endTime: Date.now() + endTime * 24 * 60 * 60 * 1000,
+                            createdBy: user?.id,
+                            thumbnail,
+                          }),
+                        });
+                        const data = await res.json();
+                        console.log({ data });
+                        handleClose();
                       }}
                     >
-                      Next
+                      Create collection
                     </button>
                   </div>
                 </div>

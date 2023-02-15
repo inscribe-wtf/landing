@@ -1,10 +1,33 @@
-import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { atom, useAtom } from "jotai";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { Collection } from "../..";
 import AnimatedLayout from "../components/animatedLayout";
+import { timeSince } from "../constants/utils";
 
 type Props = {};
 
+export const collectionsAtom = atom<Collection[]>([]);
+
 export default function Explore({}: Props) {
   const [tab, setTab] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [globalCollections, setGlobalCollections] = useAtom(collectionsAtom);
+
+  const [collections, setCollections] = useState<Collection[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      (async () => {
+        const res = await (await fetch(`/api/collection`)).json();
+        console.log({ res });
+        setGlobalCollections(res);
+        // multiply res by 2
+        setCollections([...res, ...res]);
+      })();
+    }
+  }, [isOpen]);
   return (
     <AnimatedLayout>
       <div className="py-4 flex flex-col font-mono gap-2">
@@ -28,65 +51,42 @@ export default function Explore({}: Props) {
             Drops
           </a>
         </div>
-        <div className="flex flex-row gap-10 items-baseline">
-          <div className="font-bold">1</div>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-row items-center gap-4">
-              <div className="font-bold text-xl">Kanojo-Hatano-Yui</div>
-              <div className="text-sm text-zinc-700">45 minutes ago</div>
-            </div>
-            <div className="">589 mints last hr</div>
-            <div className="flex flex-row gap-4">
-              <img src="/placeholder.avif" className="w-24 h-24 object-cover" />
-              <img src="/placeholder.avif" className="w-24 h-24 object-cover" />
-              <img src="/placeholder.avif" className="w-24 h-24 object-cover" />
-              <img src="/placeholder.avif" className="w-24 h-24 object-cover" />
-              <img src="/placeholder.avif" className="w-24 h-24 object-cover" />
-              <img src="/placeholder.avif" className="w-24 h-24 object-cover" />
-            </div>
-            <button className="btn w-48">Mint Now</button>
-          </div>
-        </div>
-        <div className="flex flex-row gap-10">
-          <div className="font-bold">2</div>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-row items-center gap-4">
-              <div className="font-bold text-xl">
-                Checks - Valentine's Love Edition
+        {collections.map((collection, index) => (
+          <div
+            className="flex flex-row gap-10 items-baseline"
+            key={collection.id}
+          >
+            <div className="font-bold">{index + 1}</div>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-row items-center gap-4">
+                <motion.div
+                  className="font-bold text-xl cursor-pointer"
+                  whileHover={{
+                    rotate: [0, 5, -5, 5, 0],
+                  }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Link href={`/collection/${collection.id}`}>
+                    {collection.name}
+                  </Link>
+                </motion.div>
+                <div className="text-sm text-zinc-700 mt-1">
+                  {timeSince(new Date(collection.created_at))}
+                </div>
               </div>
-              <div className="text-sm text-zinc-700">9 hours ago</div>
+              <div className="">{collection.max_supply} left</div>
+              <div className="flex flex-row gap-4">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <img
+                    src={collection.thumbnail}
+                    className="w-24 h-24 object-cover"
+                  />
+                ))}
+              </div>
+              <button className="btn w-48">Mint Now</button>
             </div>
-            <div className="">23 mints last hr</div>
-            <div className="flex flex-row gap-4">
-              <img src="/checks.svg" className="w-24 h-24 object-cover" />
-              <img src="/checks.svg" className="w-24 h-24 object-cover" />
-              <img src="/checks.svg" className="w-24 h-24 object-cover" />
-              <img src="/checks.svg" className="w-24 h-24 object-cover" />
-              <img src="/checks.svg" className="w-24 h-24 object-cover" />
-              <img src="/checks.svg" className="w-24 h-24 object-cover" />
-            </div>
-            <button className="btn w-48">Mint Now</button>
           </div>
-        </div>
-        <div className="flex flex-row gap-10">
-          <div className="font-bold">3</div>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-row items-center gap-4">
-              <div className="font-bold text-xl">Prince of Arkria Official</div>
-              <div className="text-sm text-zinc-700">5 hours ago</div>
-            </div>
-            <div className="">111 mints last hr</div>
-            <div className="flex flex-row gap-4">
-              <img src="/thumbnail.png" className="w-24 h-24 object-cover" />
-              <img src="/thumbnail.png" className="w-24 h-24 object-cover" />
-              <img src="/thumbnail.png" className="w-24 h-24 object-cover" />
-              <img src="/thumbnail.png" className="w-24 h-24 object-cover" />
-              <img src="/thumbnail.png" className="w-24 h-24 object-cover" />
-              <img src="/thumbnail.png" className="w-24 h-24 object-cover" />
-            </div>
-            <button className="btn w-48">Mint Now</button>
-          </div>
-        </div>
+        ))}
       </div>
     </AnimatedLayout>
   );

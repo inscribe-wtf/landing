@@ -18,15 +18,10 @@ export const userAuthenticatedAtom = atom((get) => get(userAtom) !== null);
 
 const Home: NextPage = () => {
   const [, setUser] = useAtom(userAtom);
-  const [userAuthenticated] = useAtom(userAuthenticatedAtom);
-  const router = useRouter();
+
   const [tabSelected, setTabSelected] = useState(0);
 
   const signIn = async () => {
-    if (userAuthenticated) {
-      return router.push("/dashboard");
-    }
-
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "github",
     });
@@ -56,7 +51,7 @@ const Home: NextPage = () => {
         <Tabs tabSelected={tabSelected} setTabSelected={setTabSelected} />
         <AnimatePresence mode="wait">
           {tabSelected === 0 && <Explore key="explore" />}
-          {tabSelected === 1 && <MyCollections key="create" />}
+          {tabSelected === 1 && <MyCollections key="create" signIn={signIn} />}
         </AnimatePresence>
       </div>
     </div>
