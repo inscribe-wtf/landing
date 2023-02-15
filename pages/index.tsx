@@ -1,10 +1,13 @@
 import { createClient, User } from "@supabase/supabase-js";
+import { AnimatePresence } from "framer-motion";
 import { atom, useAtom } from "jotai";
 import type { NextPage } from "next";
-import Head from "next/head";
-import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Navbar, { themeAtom } from "../src/components/navbar";
+import Tabs from "../src/components/tabs";
+import Explore from "../src/modules/explore";
+import MyCollections from "../src/modules/myCollections";
 
 const supabaseUrl = "https://wxkuupskzfjcajqdstaz.supabase.co";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY ?? "";
@@ -17,6 +20,7 @@ const Home: NextPage = () => {
   const [, setUser] = useAtom(userAtom);
   const [userAuthenticated] = useAtom(userAuthenticatedAtom);
   const router = useRouter();
+  const [tabSelected, setTabSelected] = useState(0);
 
   const signIn = async () => {
     if (userAuthenticated) {
@@ -46,25 +50,14 @@ const Home: NextPage = () => {
   }, []);
 
   return (
-    <div
-      className="min-h-screen flex flex-col justify-center items-center"
-      data-theme="forest"
-    >
-      <div className="flex flex-col justify-center items-center mb-40 gap-4">
-        <a href="https://inscribe.wtf" target="_blank" rel="noreferrer">
-          <h1 className="text-7xl font-bold">inscribe.wtf</h1>
-        </a>
-        <div className="mockup-code">
-          <pre data-prefix="$">
-            <code>npx degit inscribe-wtf/template</code>
-          </pre>
-        </div>
-        <div className="flex flex-row mt-4 gap-4">
-          <button className="btn btn-secondary" onClick={signIn}>
-            Get api key
-          </button>
-          <button className="btn btn-outline btn-secondary">Learn More</button>
-        </div>
+    <div className="min-h-screen">
+      <Navbar />
+      <div className="px-8">
+        <Tabs tabSelected={tabSelected} setTabSelected={setTabSelected} />
+        <AnimatePresence mode="wait">
+          {tabSelected === 0 && <Explore key="explore" />}
+          {tabSelected === 1 && <MyCollections key="create" />}
+        </AnimatePresence>
       </div>
     </div>
   );
