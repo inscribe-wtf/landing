@@ -276,7 +276,6 @@ export default function CreateCollection({ handleClose }: Props) {
                         <div className="flex flex-row items-center">
                           <input
                             type="file"
-                            accept=".png"
                             className="file-input w-full max-w-xs"
                             onChange={async (e) => {
                               const allFiles = [
@@ -308,6 +307,7 @@ export default function CreateCollection({ handleClose }: Props) {
                               setGeneratedImage(img.url);
                               setUploading(false);
                             }}
+                            {...otherAtt}
                           />
                           {uploading && (
                             <AiOutlineLoading className="ml-2 animate-spin" />

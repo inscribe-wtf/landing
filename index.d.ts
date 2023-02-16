@@ -22,3 +22,13 @@ export interface Collection {
   cid: string;
   end_time_ms: number;
 }
+
+export interface Inscription {
+  id: number;
+  bitcoin_address: string;
+  collection: number;
+  created_at: string;
+  image: string;
+  inscription_id: string;
+  status: string;
+}

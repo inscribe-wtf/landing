@@ -33,6 +33,14 @@ export default function Tabs({ tabSelected, setTabSelected }: Props) {
         >
           My collections
         </a>
+        <a
+          className={`text-xl py-4 font-bold ${
+            tabSelected === 2 ? "border-b-0" : "tab p-0"
+          }`}
+          onClick={() => setTabSelected(2)}
+        >
+          My Inscriptions
+        </a>
       </div>
     </div>
   );
