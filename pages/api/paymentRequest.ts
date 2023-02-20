@@ -9,7 +9,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (!paymentRequest)
         return res.status(400).json({ error: "No payment request" });
       const response = await fetch(
-        `http://localhost:5001/getInvoiceStatus?paymentRequest=${paymentRequest}`
+        `${process.env.NEXT_PUBLIC_HOST}/getInvoiceStatus?paymentRequest=${paymentRequest}`
       );
       const res1 = await response.json();
       return res.status(200).json(res1);
@@ -20,7 +20,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         amount: req.body.amount,
       });
       const res2 = await (
-        await fetch("http://localhost:5001/generateInvoice", {
+        await fetch(`${process.env.NEXT_PUBLIC_HOST}/generateInvoice`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

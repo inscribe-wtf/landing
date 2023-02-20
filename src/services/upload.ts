@@ -40,7 +40,9 @@ export const convertBase64 = (file: any): any => {
 };
 
 export const generateImage = async (cid: string, fileName: string) => {
-  const res = await fetch("http://localhost:5001/generateImage?cid=" + cid);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_HOST}/generateImage?cid=` + cid
+  );
   const imageBlob = await res.blob();
   const file = new File([imageBlob], fileName, { type: "image/png" });
   const upload = await client.put([file]);

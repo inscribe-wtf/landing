@@ -53,7 +53,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         paymentRequest: req.body.paymentRequest,
       });
       const res2 = await (
-        await fetch("http://localhost:5001/inscribe", {
+        await fetch(`${process.env.NEXT_PUBLIC_HOST}/inscribe`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

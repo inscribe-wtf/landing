@@ -153,7 +153,7 @@ export default function Mint({ handleClose, collection }: Props) {
                             },
                             body: JSON.stringify({
                               mints: 2,
-                              amount: 30,
+                              amount: 2,
                               address,
                               collectionId: collection.id,
                               userId: user?.id,
